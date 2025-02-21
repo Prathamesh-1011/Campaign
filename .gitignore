@@ -1,0 +1,30 @@
+# Ignore Node modules
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Ignore environment variables
+.env
+
+# Ignore build artifacts
+build/
+dist/
+.cache/
+coverage/
+
+# Ignore compiled Solidity files
+*.json
+
+# Ignore VS Code settings (optional)
+.vscode/
+
+# Ignore Truffle and Hardhat files (if applicable)
+truffle-config.js
+truffle-config.ts
+artifacts/
+cache/
+typechain/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
