@@ -4,9 +4,13 @@ pragma solidity ^0.8.17;
 contract CampaignFactory {
     address[] public deployedCampaigns;
 
+    event CampaignCreated(address campaignAddress, address manager, uint minimumContribution);
+
     function createCampaign(uint minimum) public {
         Campaign newCampaign = new Campaign(minimum, msg.sender);
         deployedCampaigns.push(address(newCampaign));
+
+        emit CampaignCreated(address(newCampaign), msg.sender, minimum);
     }
 
     function getDeployedCampaigns() public view returns (address[] memory) {
@@ -21,7 +25,6 @@ contract Campaign {
         address recipient;
         bool complete;
         uint approvalCount;
-        mapping(address => bool) approvals;
     }
 
     address public manager;
@@ -29,6 +32,12 @@ contract Campaign {
     mapping(address => bool) public approvers;
     uint public approversCount;
     Request[] public requests;
+    mapping(uint => mapping(address => bool)) public approvals;
+
+    event ContributionReceived(address contributor, uint amount);
+    event RequestCreated(uint indexed requestId, string description, uint value, address recipient);
+    event RequestApproved(uint indexed requestId, address approver);
+    event RequestFinalized(uint indexed requestId, address recipient, uint value);
 
     modifier restricted() {
         require(msg.sender == manager, "Only manager can call this");
@@ -41,38 +50,60 @@ contract Campaign {
     }
 
     function contribute() public payable {
-        require(msg.value > minimumContribution, "Contribution is below minimum");
+        require(msg.value >= minimumContribution, "Contribution is below minimum");
 
-        approvers[msg.sender] = true;
-        approversCount++;
+        if (!approvers[msg.sender]) {
+            approvers[msg.sender] = true;
+            approversCount++;
+        }
+
+        emit ContributionReceived(msg.sender, msg.value);
     }
 
     function createRequest(string memory description, uint value, address recipient) public restricted {
-        Request storage newRequest = requests.push();
-        newRequest.description = description;
-        newRequest.value = value;
-        newRequest.recipient = recipient;
-        newRequest.complete = false;
-        newRequest.approvalCount = 0;
+        requests.push(Request({
+            description: description,
+            value: value,
+            recipient: recipient,
+            complete: false,
+            approvalCount: 0
+        }));
+
+        emit RequestCreated(requests.length - 1, description, value, recipient);
     }
 
     function approveRequest(uint index) public {
-        Request storage request = requests[index];
-
         require(approvers[msg.sender], "Only contributors can approve");
-        require(!request.approvals[msg.sender], "Already approved");
+        require(!approvals[index][msg.sender], "Already approved");
 
-        request.approvals[msg.sender] = true;
+        Request storage request = requests[index];
+        approvals[index][msg.sender] = true;
         request.approvalCount++;
+
+        emit RequestApproved(index, msg.sender);
+
+        // Auto-finalize if approval threshold is met
+        if (request.approvalCount > approversCount / 2) {
+            _finalizeRequest(index);
+        }
     }
 
-    function finalizeRequest(uint index) public restricted {
+    function _finalizeRequest(uint index) internal {
         Request storage request = requests[index];
 
-        require(request.approvalCount > (approversCount / 2), "Not enough approvals");
         require(!request.complete, "Request already completed");
 
         payable(request.recipient).transfer(request.value);
         request.complete = true;
+
+        emit RequestFinalized(index, request.recipient, request.value);
+    }
+
+    function getSummary() public view returns (uint, uint, uint, uint, address) {
+        return (minimumContribution, address(this).balance, requests.length, approversCount, manager);
+    }
+
+    function getRequestsCount() public view returns (uint) {
+        return requests.length;
     }
 }
