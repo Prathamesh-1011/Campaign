@@ -1,10 +1,9 @@
 import web3 from "./web3";
+import CampaignFactory from "../artifacts/contracts/CrossChainCampaign.sol/CrossChainCampaign.json ";  // Make sure this path is correct
 
-import CampaignFactory from "./build/CampaignFactory.json";
+const factoryAddress = "0x32518cDEA3d50ec265eC5F6f983282B4eee01354";  // Replace with actual deployed address
 
-const instance = new web3.eth.Contract(
-  CampaignFactory.abi,
-  "0x63F5a1B578C8dd071158AF3957b944235c17326C"
-);
+const factory = new web3.eth.Contract(CampaignFactory.abi, factoryAddress);
 
-export default instance;
+export default factory;
+

@@ -1,44 +1,45 @@
-import React, { Component } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import factory from "../ethereum/factory";
 import { Button, Card } from "semantic-ui-react";
 import Layout from "../components/Layout";
+import factory from "../ethereum/factory";
 
-class CampaignIndex extends Component {
-  static async getInitialProps() {
-    const campaigns = await factory.methods.getDeployedCampaigns().call();
-    return { campaigns };
-  }
+const CampaignIndex = () => {
+  const [campaigns, setCampaigns] = useState([]);
 
-  renderCampaigns() {
-    const items = this.props.campaigns.map((address) => {
-      return {
-        header: address,
-        description: (
-          <Link href={`/campaigns/${address}`}>
-            View Campaign
-          </Link>
-        ),
-        fluid: true,
-      };
-    });
+  useEffect(() => {
+    async function loadCampaigns() {
+      if (factory) {
+        const deployedCampaigns = await factory.methods.getDeployedCampaigns().call();
+        setCampaigns(deployedCampaigns);
+      }
+    }
+    loadCampaigns();
+  }, []);
 
-    return <Card.Group items={items} />;
-  }
+  const renderCampaigns = () => {
+    return campaigns.map((address) => ({
+      header: address,
+      description: (
+        <Link href={`/campaigns/${address}`} key={address}>
+          View Campaign
+        </Link>
+      ),
+      fluid: true,
+    }));
+  };
 
-  render() {
-    return (
-      <Layout>
-        <div>
-          <h3>Open Campaigns</h3>
-          <Link href="/campaigns/new">
-            <Button floated="right" content="Create Campaign" icon="add circle" primary />
-          </Link>
-          {this.renderCampaigns()}
-        </div>
-      </Layout>
-    );
-  }
-}
+  return (
+    <Layout>
+      <div>
+        <h3>Open Campaigns</h3>
+        <Link href="/campaigns/new">
+          <Button floated="right" content="Create Campaign" icon="add circle" primary />
+        </Link>
+        <Card.Group items={renderCampaigns()} />
+      </div>
+    </Layout>
+  );
+};
 
 export default CampaignIndex;

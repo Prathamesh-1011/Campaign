@@ -1,67 +1,52 @@
-import React, { Component } from "react";
-import { useRouter } from "next/router";
-import Layout from "../../components/Layout";
+import React, { useState } from "react";
 import { Form, Button, Input, Message } from "semantic-ui-react";
 import factory from "../../ethereum/factory";
 import web3 from "../../ethereum/web3";
+import { useRouter } from "next/router";
 
-class CampaignNew extends Component {
-  state = {
-    minimumContribution: "",
-    errorMessage: "",
-    loading: false
-  };
+const NewCampaign = () => {
+    const [minimumContribution, setMinimumContribution] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const router = useRouter();
 
-  onSubmit = async (event) => {
-    event.preventDefault();
+    const onSubmit = async (event) => {
+        event.preventDefault();
+        setLoading(true);
+        setErrorMessage("");
 
-    this.setState({ loading: true, errorMessage: "" });
+        try {
+            const accounts = await web3.eth.getAccounts();
+            await factory.methods.createCampaign(minimumContribution).send({
+                from: accounts[0],
+            });
 
-    try {
-      const accounts = await web3.eth.getAccounts();
-      await factory.methods
-        .createCampaign(this.state.minimumContribution)
-        .send({ from: accounts[0] });
+            router.push("/");
+        } catch (err) {
+            setErrorMessage(err.message);
+        }
 
-      // ✅ Redirect to the home page after successful campaign creation
-      this.props.router.push("/");
-    } catch (err) {
-      this.setState({ errorMessage: err.message });
-    }
+        setLoading(false);
+    };
 
-    this.setState({ loading: false });
-  };
-
-  render() {
     return (
-      <Layout>
-        <h3>Create a Campaign!</h3>
-
-        <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
-          <Form.Field>
-            <label>Minimum Contribution</label>
-            <Input
-              label="wei"
-              labelPosition="right"
-              value={this.state.minimumContribution}
-              onChange={(event) =>
-                this.setState({ minimumContribution: event.target.value })
-              }
-            />
-          </Form.Field>
-
-          <Message error header="Oops!" content={this.state.errorMessage} />
-          <Button loading={this.state.loading} primary>
-            Create!
-          </Button>
-        </Form>
-      </Layout>
+        <div>
+            <h3>Create a New Campaign</h3>
+            <Form onSubmit={onSubmit} error={!!errorMessage}>
+                <Form.Field>
+                    <label>Minimum Contribution</label>
+                    <Input
+                        label="wei"
+                        labelPosition="right"
+                        value={minimumContribution}
+                        onChange={(event) => setMinimumContribution(event.target.value)}
+                    />
+                </Form.Field>
+                {/* <Message error header="Oops!" content={errorMessage} /> */}
+                <Button primary loading={loading}>Create!</Button>
+            </Form>
+        </div>
     );
-  }
-}
+};
 
-// ✅ Wrap with `useRouter()` for navigation support
-export default function NewCampaign() {
-  const router = useRouter();
-  return <CampaignNew router={router} />;
-}
+export default NewCampaign;

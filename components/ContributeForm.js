@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import { Form, Button, Input, Message } from "semantic-ui-react";
+import { useRouter } from "next/router"; // ✅ Use Next.js router for navigation
 import getCampaign from "../ethereum/campaign";
 import web3 from "../ethereum/web3";
 
 export default function ContributeForm({ address }) {
     const [value, setValue] = useState("");
+    const [receiverChain, setReceiverChain] = useState(""); // ✅ Added field for receiver campaign address
+    const [chainSelector, setChainSelector] = useState(""); // ✅ Added field for chain selector
     const [errorMessage, setErrorMessage] = useState("");
     const [loading, setLoading] = useState(false);
+    const router = useRouter(); // ✅ Use Next.js router
 
     const onSubmit = async (event) => {
         event.preventDefault();
@@ -14,16 +18,27 @@ export default function ContributeForm({ address }) {
         setErrorMessage("");
 
         try {
-            const campaign = getCampaign(address);  // Use the correct function to get the campaign contract
+            const campaign = getCampaign(address);
             const accounts = await web3.eth.getAccounts();
 
-            await campaign.methods.contribute().send({
-                from: accounts[0],
-                value: web3.utils.toWei(value, "ether")
-            });
-            this.props.router.push("/campaigns/${address}"); // Redirect to the campaign page after successful contribution
+            if (receiverChain && chainSelector) {
+                // ✅ Cross-Chain Contribution
+                await campaign.methods.crossChainContribute(receiverChain, chainSelector).send({
+                    from: accounts[0],
+                    value: web3.utils.toWei(value, "ether")
+                });
+            } else {
+                // ✅ Normal Contribution
+                await campaign.methods.contribute().send({
+                    from: accounts[0],
+                    value: web3.utils.toWei(value, "ether")
+                });
+            }
 
-            setValue(""); // Reset input after successful contribution
+            router.push(`/campaigns/${address}`); // ✅ Redirect to campaign page after success
+            setValue(""); // ✅ Reset input
+            setReceiverChain("");
+            setChainSelector("");
         } catch (error) {
             setErrorMessage(error.message);
         }
@@ -38,12 +53,33 @@ export default function ContributeForm({ address }) {
                 <Input 
                     value={value} 
                     onChange={(event) => setValue(event.target.value)}
-                    label="ether"
+                    label="ETH"
                     labelPosition="right"
                 />
             </Form.Field>
-            {/* <Message error header="Oops!" content={errorMessage} /> */}
-            <Button primary loading={loading}>Contribute!</Button>
+
+            <Form.Field>
+                <label>Receiver Campaign Address (Optional for Cross-Chain)</label>
+                <Input 
+                    value={receiverChain} 
+                    onChange={(event) => setReceiverChain(event.target.value)}
+                    placeholder="Enter the receiver campaign address"
+                />
+            </Form.Field>
+
+            <Form.Field>
+                <label>Chain Selector (Optional for Cross-Chain)</label>
+                <Input 
+                    value={chainSelector} 
+                    onChange={(event) => setChainSelector(event.target.value)}
+                    placeholder="Enter destination chain selector"
+                />
+            </Form.Field>
+
+            <Message error header="Oops!" content={errorMessage} />
+            <Button primary loading={loading}>
+                {receiverChain && chainSelector ? "Contribute Cross-Chain" : "Contribute"}
+            </Button>
         </Form>
     );
 }
