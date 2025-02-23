@@ -7,6 +7,15 @@ Traditional crowdfunding platforms lack transparency and accountability. Once ba
 ## 🔥 Our Solution
 Our **decentralized crowdfunding platform** ensures that funds are released only when milestones are met and backers approve the request. Smart contracts automate verification, eliminating fraud and enhancing financial integrity.
 
+### **Reactive Smart Contracts in Our Platform**  
+Our platform leverages **Reactive Smart Contracts** to automate transactions and improve fund governance.  
+
+- **Main Branch (`Campaign.sol`)**  
+  We implemented reactivity by automatically executing transactions when an approval request surpasses **50% of backers' votes**. Additionally, campaign owners can only create a withdrawal request once the **minimum funding threshold** is met, ensuring responsible fund allocation.  
+
+- **Cross-Chain Campaign Branch**  
+  Here, reactive smart contracts facilitate **cross-chain bridging**, ensuring seamless fund transfers between blockchains. This enables backers to contribute using different networks while maintaining the same governance and milestone-based fund release system.  
+
 ## 🎯 Key Features & Benefits
 - **🔗 Reactive Smart Contracts**: Funds are managed dynamically based on milestones and backer votes.
 - **⚖️ Decentralized Governance**: Backers approve fund withdrawals, ensuring accountability.
@@ -45,6 +54,7 @@ Our **decentralized crowdfunding platform** ensures that funds are released only
 - **Hardhat** – Smart contract development
 - **React.js** – Frontend development
 - **Chainlink CCIP** – Cross-chain token bridging
+
 
 ## 📦 Installation & Setup
 ### Clone the Repository
