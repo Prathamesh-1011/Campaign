@@ -56,6 +56,15 @@ Our platform leverages **Reactive Smart Contracts** to automate transactions and
 - **Chainlink CCIP** – Cross-chain token bridging
 
 
+## Project Demo
+
+Watch the full demonstration of our decentralized crowdfunding platform:
+
+<a href="https://youtu.be/5vew3_X2Ej4" target="_blank">
+  <img src="https://img.youtube.com/vi/5vew3_X2Ej4/0.jpg" alt="Watch the video" width="600">
+</a>
+
+
 ## 📦 Installation & Setup
 ### Clone the Repository
 ```sh
