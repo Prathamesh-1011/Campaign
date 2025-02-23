@@ -78,8 +78,8 @@ This approach transforms **crowdfunding governance**, removing inefficiencies se
 
 Watch the full demonstration of our decentralized crowdfunding platform:
 
-<a href="https://youtu.be/5vew3_X2Ej4" target="_blank">
-  <img src="https://img.youtube.com/vi/5vew3_X2Ej4/0.jpg" alt="Watch the video" width="600">
+<a href="https://youtu.be/ctUeWaHYKCY" target="_blank">
+  <img src="https://img.youtube.com/vi/ctUeWaHYKCY/0.jpg" alt="Watch the video" width="600">
 </a>
 
 
